@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "D:\\Dev\\Biomni\\TechTest\\BiomniDevTest\\BooksApi\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{0009A618-5447-4260-A4F8-F8583F3843CD}|BooksApi\\BooksApi.csproj|d:\\dev\\biomni\\techtest\\biomnidevtest\\booksapi\\booksapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0009A618-5447-4260-A4F8-F8583F3843CD}|BooksApi\\BooksApi.csproj|solutionrelative:booksapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{0009A618-5447-4260-A4F8-F8583F3843CD}|BooksApi\\BooksApi.csproj|d:\\dev\\biomni\\techtest\\biomnidevtest\\booksapi\\booksapi\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0009A618-5447-4260-A4F8-F8583F3843CD}|BooksApi\\BooksApi.csproj|solutionrelative:booksapi\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -23,19 +27,32 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Dev\\Biomni\\TechTest\\BiomniDevTest\\BooksApi\\BooksApi\\Program.cs",
+              "RelativeDocumentMoniker": "BooksApi\\Program.cs",
+              "ToolTip": "D:\\Dev\\Biomni\\TechTest\\BiomniDevTest\\BooksApi\\BooksApi\\Program.cs",
+              "RelativeToolTip": "BooksApi\\Program.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAABIAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-15T15:55:30.605Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "BooksController.cs",
               "DocumentMoniker": "D:\\Dev\\Biomni\\TechTest\\BiomniDevTest\\BooksApi\\BooksApi\\Controllers\\BooksController.cs",
               "RelativeDocumentMoniker": "BooksApi\\Controllers\\BooksController.cs",
               "ToolTip": "D:\\Dev\\Biomni\\TechTest\\BiomniDevTest\\BooksApi\\BooksApi\\Controllers\\BooksController.cs",
               "RelativeToolTip": "BooksApi\\Controllers\\BooksController.cs",
-              "ViewState": "AgIAACAAAAAAAAAAAAAwwBQAAAAVAAAAAAAAAA==",
+              "ViewState": "AgIAAIIAAAAAAAAAAAAmwCMAAAA/AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-02-15T15:53:25.802Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "BooksContext.cs",
               "DocumentMoniker": "D:\\Dev\\Biomni\\TechTest\\BiomniDevTest\\BooksApi\\BooksApi\\Models\\BooksContext.cs",
               "RelativeDocumentMoniker": "BooksApi\\Models\\BooksContext.cs",

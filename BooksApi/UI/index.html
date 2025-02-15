@@ -1,0 +1,214 @@
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+<div id="app">
+  <h1>{{ title }}</h1>
+  <button @click="getBooks">Get Books</button>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Publication Date</th>
+        <th>Edition Number</th>
+        <th>ISBN</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="book in books" :key="book.id">
+        <td>{{ book.id }}</td>
+        <td>{{ book.title }}</td>
+        <td>{{ book.author }}</td>
+        <td>{{ book.publicationDate }}</td>
+        <td>{{ book.editionNumber }}</td>
+        <td>{{ book.isbn }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <input id="IdField" type="text" placeholder="Enter Book Id"/>
+  <button @click="getBookById">Get Book By Id</button>
+  
+  <h2>Add/Update Book</h2>
+  <input v-model="bookForm.id" type="text" placeholder="ID (for update only)"/>
+  <input v-model="bookForm.title" type="text" placeholder="Title"/>
+  <input v-model="bookForm.author" type="text" placeholder="Author"/>
+  <input v-model="bookForm.publicationDate" type="date" placeholder="Publication Date"/>
+  <input v-model="bookForm.editionNumber" type="number" placeholder="Edition Number"/>
+  <input v-model="bookForm.isbn" type="text" placeholder="ISBN"/>
+  <button @click="addBook">Add Book</button>
+  <button @click="updateBook">Update Book</button>
+  <button @click="deleteBook">Delete Book</button>
+
+  <!-- Modal -->
+  <div v-if="showModal" class="modal">
+    <div class="modal-content">
+      <span class="close" @click="showModal = false">&times;</span>
+      <p>{{ modalMessage }}</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.8/axios.min.js" integrity="sha512-v8+bPcpk4Sj7CKB11+gK/FnsbgQ15jTwZamnBf/xDmiQDcgOIYufBo6Acu1y30vrk8gg5su4x0CG3zfPaq5Fcg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+  const { createApp, ref } = Vue
+  const API_URL = "https://localhost:7019/";
+  createApp({
+    data() {
+      return {
+        title: "Books",
+        books: [],
+        bookForm: {
+          id: '',
+          title: '',
+          author: '',
+          publicationDate: '',
+          editionNumber: '',
+          isbn: ''
+        },
+        showModal: false,
+        modalMessage: ''
+      }
+    },
+    methods: {
+      async getBooks() {
+        try {
+          const response = await axios.get(API_URL + "api/books");
+          console.log(response.data);
+          this.books = response.data;
+        } catch (error) {
+          console.error(error);
+        }
+      },
+      async getBookById() {
+        const bookId = document.getElementById('IdField').value;
+        if (bookId) {
+          try {
+            const response = await axios.get(API_URL + "api/books/" + bookId);
+            if (response.data) {
+              console.log(response.data);
+              this.books = [response.data];
+            } else {
+              this.modalMessage = "No book found with the provided ID.";
+              this.showModal = true;
+            }
+          } catch (error) {
+            console.error(error);
+            this.modalMessage = error.response.data;
+            this.showModal = true;
+          }
+        } else {
+          console.error("Book ID is required");
+          this.modalMessage = "Book ID is required.";
+          this.showModal = true;
+        }
+      },
+      async addBook() {
+        const newBook = {
+          title: this.bookForm.title,
+          author: this.bookForm.author,
+          publicationDate: this.bookForm.publicationDate,
+          editionNumber: this.bookForm.editionNumber,
+          isbn: this.bookForm.isbn
+        };
+        try {
+          const response = await axios.post(API_URL + "api/books", newBook);
+          console.log(response.data);
+          this.books.push(response.data);
+          this.resetForm();
+        } catch (error) {
+          console.error(error);
+        }
+      },
+      async updateBook() {
+        const bookId = this.bookForm.id;
+        const updatedBook = {
+          id: this.bookForm.id,
+          title: this.bookForm.title,
+          author: this.bookForm.author,
+          publicationDate: this.bookForm.publicationDate,
+          editionNumber: this.bookForm.editionNumber,
+          isbn: this.bookForm.isbn
+        };
+        if (bookId) {
+          try {
+            const response = await axios.put(API_URL + "api/books/" + bookId, updatedBook);
+            console.log(response.data);
+            const index = this.books.findIndex(book => book.id === response.data.id);
+            if (index !== -1) {
+              this.books.splice(index, 1, response.data);
+            }
+            this.getBooks();
+            this.resetForm();
+          } catch (error) {
+            console.error(error);
+          }
+        } else {
+          console.error("Book ID is required for update");
+        }
+      },
+      async deleteBook() {
+        const bookId = this.bookForm.id;
+        if (bookId) {
+          try {
+            await axios.delete(API_URL + "api/books/" + bookId);
+            console.log("Book deleted");
+            this.books = this.books.filter(book => book.id !== parseInt(bookId));
+            this.resetForm();
+          } catch (error) {
+            console.error(error);
+          }
+        } else {
+          console.error("Book ID is required for deletion");
+        }
+      },
+      resetForm() {
+        this.bookForm = {
+          id: '',
+          title: '',
+          author: '',
+          publicationDate: '',
+          editionNumber: '',
+          isbn: ''
+        };
+      }
+    },
+    mounted() {
+      this.getBooks();
+    }
+  }).mount('#app')
+</script>
+
+<style>
+  .modal {
+    display: block;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+  }
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+  }
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+</style>
