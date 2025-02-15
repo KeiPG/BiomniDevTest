@@ -2,150 +2,147 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using BooksApi.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BooksApi.Controllers
 {
+    [ApiController]
+    [Route("api/books")]
     public class BooksController : Controller
     {
         private readonly BooksContext _context;
+        private readonly ILogger<BooksController> _logger;
 
-        public BooksController(BooksContext context)
+        public BooksController(BooksContext context, ILogger<BooksController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: Books
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public async Task<IActionResult> GetBooks()
         {
-            return View(await _context.Books.ToListAsync());
+            try
+            {
+                var books = await _context.Books.ToListAsync();
+                return Ok(books);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving books");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // GET: Books/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetBooksById(int id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
+                var book = await _context.Books.FindAsync(id);
+                if (book == null)
+                {
+                    return NotFound("Book not found");
+                }
+                return Ok(book);
             }
-
-            var book = await _context.Books
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (book == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogError(ex, $"Error retrieving book with ID {id}");
+                return StatusCode(500, "Internal server error");
             }
-
-            return View(book);
-        }
-
-        // GET: Books/Create
-        public IActionResult Create()
-        {
-            return View();
         }
 
         // POST: Books/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Author,PublicationDate,EditionNumber,Isbn")] Book book)
+        public async Task<IActionResult> Create([Bind("Title,Author,PublicationDate,EditionNumber,Isbn")] Book book)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var maxId = await _context.Books.MaxAsync(b => (int?)b.Id) ?? 0;
+                book.Id = maxId + 1;
+
                 _context.Add(book);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return CreatedAtAction(nameof(GetBooksById), new { id = book.Id }, book);
             }
-            return View(book);
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Error creating book");
+                return StatusCode(500, "An error occurred while saving the book.");
+            }
         }
 
-        // GET: Books/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var book = await _context.Books.FindAsync(id);
-            if (book == null)
-            {
-                return NotFound();
-            }
-            return View(book);
-        }
-
-        // POST: Books/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        // PUT: Books/Edit/5
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Author,PublicationDate,EditionNumber,Isbn")] Book book)
         {
             if (id != book.Id)
             {
-                return NotFound();
+                return BadRequest("Book ID mismatch");
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(book);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BookExists(book.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return BadRequest(ModelState);
             }
-            return View(book);
+
+            try
+            {
+                _context.Update(book);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                if (!BookExists(book.Id))
+                {
+                    return NotFound("Book not found");
+                }
+                else
+                {
+                    _logger.LogError(ex, "Concurrency error updating book");
+                    return StatusCode(500, "An error occurred while updating the book.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating book");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
-        // GET: Books/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // DELETE: Books/Delete/5
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                var book = await _context.Books.FindAsync(id);
+                if (book == null)
+                {
+                    return NotFound("Book not found");
+                }
 
-            var book = await _context.Books
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (book == null)
-            {
-                return NotFound();
-            }
-
-            return View(book);
-        }
-
-        // POST: Books/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var book = await _context.Books.FindAsync(id);
-            if (book != null)
-            {
                 _context.Books.Remove(book);
+                await _context.SaveChangesAsync();
+                return NoContent();
             }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting book with ID {id}");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         private bool BookExists(int id)
